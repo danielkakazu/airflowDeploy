@@ -14,7 +14,7 @@ terraform {
 data "terraform_remote_state" "infra" {
   backend = "remote"
   config = {
-    organization = "minha-org-hcp"
+    organization = "StudyTestKakazu"
     workspaces = {
       name = "infra"
     }
