@@ -40,7 +40,7 @@ resource "azurerm_postgresql_flexible_server" "airflow_db" {
   administrator_password = var.db_admin_password
   version                = "16"
 
-  sku_name   = "Standard_D2ds_v5"
+  sku_name   = "GP_Standard_D2ds_v5"
   storage_mb = 32768
 
   delegated_subnet_id = azurerm_subnet.db.id
