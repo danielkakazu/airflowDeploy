@@ -46,10 +46,6 @@ resource "azurerm_postgresql_flexible_server" "airflow_db" {
   delegated_subnet_id = azurerm_subnet.db.id
   private_dns_zone_id = azurerm_private_dns_zone.postgres.id
 
-  high_availability {
-    mode = "Disabled"
-  }
-
   authentication {
     password_auth_enabled = true
   }
