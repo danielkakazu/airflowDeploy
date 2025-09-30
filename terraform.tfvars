@@ -1,4 +1,3 @@
-# Example terraform.tfvars (do NOT commit secrets in real repos)
 db_admin_password = "airflow_pass"
 ssh_private_key   = <<EOF
 -----BEGIN OPENSSH PRIVATE KEY-----
