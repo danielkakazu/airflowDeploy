@@ -159,91 +159,77 @@ resource "helm_release" "airflow" {
   namespace  = kubernetes_namespace.airflow_ns.metadata[0].name
   version    = "1.16.0"
 
-  set {
+  set = [
+  {
     name  = "executor"
     value = "KubernetesExecutor"
-  }
-
-  set {
+  },
+  {
     name  = "postgresql.enabled"
     value = "false"
-  }
-
-  set {
+  },
+  {
     name  = "redis.enabled"
     value = "false"
-  }
-
-  set {
+  },
+  {
     name  = "data.metadataSecretName"
     value = kubernetes_secret.airflow_db_secret.metadata[0].name
-  }
-
-  set {
+  },
+  {
     name  = "airflow.persistence.enabled"
     value = "true"
-  }
-
-  set {
+  },
+  {
     name  = "airflow.persistence.size"
     value = "20Gi"
-  }
-
-  set {
+  },
+  {
     name  = "images.airflow.repository"
     value = "apache/airflow"
-  }
-
-  set {
+  },
+  {
     name  = "images.airflow.tag"
     value = var.airflow_image_tag
-  }
-
-  set {
+  },
+  {
     name  = "airflow.airflowVersion"
     value = var.airflow_image_tag
-  }
-
-  set {
+  },
+  {
     name  = "webserver.service.type"
     value = "LoadBalancer"
-  }
-
-  set {
+  },
+  {
     name  = "webserver.service.loadBalancerIP"
     value = azurerm_public_ip.airflow_web.ip_address
-  }
-
-  set {
+  },
+  {
     name  = "dags.gitSync.enabled"
     value = "true"
-  }
-
-  set {
+  },
+  {
     name  = "dags.gitSync.repo"
     value = var.dags_git_repo
-  }
-
-  set {
+  },
+  {
     name  = "dags.gitSync.branch"
     value = var.dags_git_branch
-  }
-
-  set {
+  },
+  {
     name  = "dags.gitSync.subPath"
     value = "dags"
-  }
-
-  set {
+  },
+  {
     name  = "dags.gitSync.sshKeySecret"
     value = kubernetes_secret.airflow_ssh_secret.metadata[0].name
-  }
-
+  },
   # node selector and tolerations should match the workerpool
-  set {
+  {
     name  = "executorConfig.nodeSelector.agentpool"
     value = "workerpool"
   }
+]
 
   lifecycle {
     ignore_changes = [
