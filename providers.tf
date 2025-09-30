@@ -1,38 +1,33 @@
 terraform {
+  required_version = ">= 1.6.0"
+
+  backend "remote" {
+    host = "app.terraform.io" # HCP / Terraform Cloud host
+    organization = "your-org" # <-- substitua pelo nome da sua organização no HCP
+
+    workspaces {
+      name = "airflow-azure-workspace" # <-- nome do workspace
+    }
+  }
+
   required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = ">= 3.0"
+    }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 2.23"
+      version = ">= 2.0"
     }
     helm = {
       source  = "hashicorp/helm"
-      version = "~> 2.9"
+      version = ">= 2.0"
     }
   }
 }
 
-data "terraform_remote_state" "infra" {
-  backend = "remote"
-  config = {
-    organization = "StudyTestKakazu"
-    workspaces = {
-      name = "infra"
-    }
-  }
+provider "azurerm" {
+  features {}
 }
 
-provider "kubernetes" {
-  host                   = data.terraform_remote_state.infra.outputs.kube_config.host
-  client_certificate     = base64decode(data.terraform_remote_state.infra.outputs.kube_config.client_certificate)
-  client_key             = base64decode(data.terraform_remote_state.infra.outputs.kube_config.client_key)
-  cluster_ca_certificate = base64decode(data.terraform_remote_state.infra.outputs.kube_config.cluster_ca_certificate)
-}
-
-provider "helm" {
-  kubernetes {
-    host                   = data.terraform_remote_state.infra.outputs.kube_config.host
-    client_certificate     = base64decode(data.terraform_remote_state.infra.outputs.kube_config.client_certificate)
-    client_key             = base64decode(data.terraform_remote_state.infra.outputs.kube_config.client_key)
-    cluster_ca_certificate = base64decode(data.terraform_remote_state.infra.outputs.kube_config.cluster_ca_certificate)
-  }
-}
+# Kubernetes and Helm providers are configured later using the AKS kubeconfig outputs
