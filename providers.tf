@@ -2,11 +2,11 @@ terraform {
   required_version = ">= 1.6.0"
 
   backend "remote" {
-    host = "app.terraform.io" # HCP / Terraform Cloud host
-    organization = "your-org" # <-- substitua pelo nome da sua organização no HCP
+    host         = "app.terraform.io"
+    organization = "StudyTestKakazu"
 
     workspaces {
-      name = "airflow-azure-workspace" # <-- nome do workspace
+      name = "airflowDeploy"
     }
   }
 
@@ -37,11 +37,4 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.aks.kube_config[0].cluster_ca_certificate)
 }
 
-provider "helm" {
-  kubernetes {
-    host                   = azurerm_kubernetes_cluster.aks.kube_config[0].host
-    client_certificate     = base64decode(azurerm_kubernetes_cluster.aks.kube_config[0].client_certificate)
-    client_key             = base64decode(azurerm_kubernetes_cluster.aks.kube_config[0].client_key)
-    cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.aks.kube_config[0].cluster_ca_certificate)
-  }
-}
+provider "helm" {}
