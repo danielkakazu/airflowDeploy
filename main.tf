@@ -239,6 +239,8 @@ resource "helm_release" "airflow" {
   }
 
   depends_on = [
+    kubernetes_namespace.airflow_ns,
+    azurerm_kubernetes_cluster.aks,
     kubernetes_secret.airflow_db_secret,
     kubernetes_secret.airflow_ssh_secret,
     azurerm_public_ip.airflow_web
