@@ -1,7 +1,0 @@
-# Example terraform.tfvars (do NOT commit secrets in real repos)
-db_admin_password = "ReplaceWithStrongPassword123!"
-ssh_private_key   = <<EOF
------BEGIN OPENSSH PRIVATE KEY-----
-# paste your private key here (example only)
------END OPENSSH PRIVATE KEY-----
-EOF
