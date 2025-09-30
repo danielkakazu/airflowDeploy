@@ -82,12 +82,6 @@ resource "azurerm_kubernetes_cluster" "aks" {
   }
 
   kubernetes_version = "1.30.3"
-
-  addon_profile {
-    oms_agent {
-      enabled = true
-    }
-  }
 }
 
 resource "azurerm_kubernetes_cluster_node_pool" "workerpool" {
