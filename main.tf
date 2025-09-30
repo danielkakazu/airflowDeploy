@@ -260,8 +260,7 @@ resource "helm_release" "airflow" {
 
   lifecycle {
     ignore_changes = [
-      # prevent helm from forcing changes on dynamic fields like loadBalancer IP while AKS allocates it
-      set[?name=="webserver.service.loadBalancerIP"]
+      set
     ]
   }
 
