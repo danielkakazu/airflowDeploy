@@ -86,7 +86,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "workerpool" {
   kubernetes_cluster_id = azurerm_kubernetes_cluster.aks.id
   vm_size               = "Standard_D4s_v3"
   node_count            = 0
-  enable_auto_scaling   = true
+  auto_scaling_enabled  = true
   min_count             = 0
   max_count             = 5
   mode                  = "User"
