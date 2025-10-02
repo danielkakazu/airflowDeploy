@@ -1,46 +1,51 @@
-variable "location" {
-  type    = string
-  default = "Central US"
+variable "resource_group_name" {
+  type        = string
+  description = "Nome do Resource Group"
 }
 
-variable "resource_group_name" {
-  type    = string
-  default = "rg-airflow-prod"
+variable "location" {
+  type        = string
+  description = "Região do Azure"
 }
 
 variable "vnet_name" {
-  type    = string
-  default = "vnet-airflow"
+  type        = string
+  description = "Nome da VNet"
 }
 
 variable "db_admin_user" {
-  type    = string
-  default = "airflow_user"
+  type        = string
+  description = "Usuário administrador do PostgreSQL"
 }
 
 variable "db_admin_password" {
-  type      = string
-  description = "Password for the PostgreSQL flexible server admin user. Mark this variable as sensitive in HCP."
-  sensitive = true
-}
-
-variable "ssh_private_key" {
-  type      = string
-  description = "Private SSH key for git sync. Mark this variable as sensitive in HCP."
-  sensitive = true
-}
-
-variable "dags_git_repo" {
-  type    = string
-  default = "git@github.com:danielkakazu/dags.git"
-}
-
-variable "dags_git_branch" {
-  type    = string
-  default = "main"
+  type        = string
+  description = "Senha do administrador do PostgreSQL"
+  sensitive   = true
 }
 
 variable "airflow_image_tag" {
-  type    = string
-  default = "2.10.5"
+  type        = string
+  description = "Tag da imagem do Airflow"
+}
+
+variable "dags_git_repo" {
+  type        = string
+  description = "Repositório Git dos DAGs"
+}
+
+variable "dags_git_branch" {
+  type        = string
+  description = "Branch do repositório Git dos DAGs"
+}
+
+variable "ssh_private_key" {
+  type        = string
+  description = "Chave SSH privada para GitSync"
+  sensitive   = true
+}
+
+variable "ssh_known_hosts" {
+  type        = string
+  description = "Conteúdo do known_hosts para GitSync (ex: github.com ssh-rsa ...)"
 }
