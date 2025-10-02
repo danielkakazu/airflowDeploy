@@ -26,31 +26,30 @@ terraform {
   }
 }
 
-# =========================
-# Azure provider
-# =========================
 provider "azurerm" {
   features {}
 }
 
-# =========================
-# Kubernetes provider (via AKS kubeconfig)
-# =========================
+# Kubernetes provider com alias, dependente do cluster AKS
 provider "kubernetes" {
+  alias                  = "aks"
   host                   = azurerm_kubernetes_cluster.aks.kube_config[0].host
   client_certificate     = base64decode(azurerm_kubernetes_cluster.aks.kube_config[0].client_certificate)
   client_key             = base64decode(azurerm_kubernetes_cluster.aks.kube_config[0].client_key)
   cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.aks.kube_config[0].cluster_ca_certificate)
+
+  depends_on = [azurerm_kubernetes_cluster.aks]
 }
 
-# =========================
-# Helm provider (via AKS kubeconfig)
-# =========================
+# Helm provider com alias, dependente do cluster AKS
 provider "helm" {
+  alias      = "aks"
   kubernetes = {
     host                   = azurerm_kubernetes_cluster.aks.kube_config[0].host
     client_certificate     = base64decode(azurerm_kubernetes_cluster.aks.kube_config[0].client_certificate)
     client_key             = base64decode(azurerm_kubernetes_cluster.aks.kube_config[0].client_key)
     cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.aks.kube_config[0].cluster_ca_certificate)
   }
+
+  depends_on = [azurerm_kubernetes_cluster.aks]
 }
