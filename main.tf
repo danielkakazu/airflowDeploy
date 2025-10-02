@@ -91,6 +91,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "workerpool" {
   min_count             = 0
   max_count             = 5
   mode                  = "User"
+  vnet_subnet_id        = azurerm_subnet.subnet_aks.id
 
   node_taints = ["workload=worker:NoSchedule"]
 }
@@ -158,6 +159,7 @@ resource "kubernetes_secret" "airflow_ssh_knownhosts" {
   depends_on = [kubernetes_namespace.airflow_ns]
 }
 
+# Helm Airflow
 resource "helm_release" "airflow" {
   provider = helm.aks
 
