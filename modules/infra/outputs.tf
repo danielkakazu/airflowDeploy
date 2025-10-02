@@ -16,3 +16,6 @@ output "db_fqdn" {
 output "airflow_web_ip" { 
   value = azurerm_public_ip.airflow_web.ip_address 
   }
+output "aks_cluster_name" {
+  value = azurerm_kubernetes_cluster.aks.name
+}

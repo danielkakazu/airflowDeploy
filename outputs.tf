@@ -1,3 +1,11 @@
-output "aks_cluster_name" { value = module.infra.aks_cluster_name }
-output "public_ip" { value = module.infra.public_ip }
-output "postgres_fqdn" { value = module.infra.postgres_fqdn }
+output "aks_cluster_name" {
+  value = module.infra.kube_host
+}
+
+output "postgres_fqdn" {
+  value = module.infra.db_fqdn
+}
+
+output "public_ip" {
+  value = module.infra.airflow_web_ip
+}
