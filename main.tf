@@ -1,4 +1,6 @@
+# =========================
 # Resource Group and Network
+# =========================
 resource "azurerm_resource_group" "airflow" {
   name     = var.resource_group_name
   location = var.location
@@ -30,7 +32,9 @@ resource "azurerm_private_dns_zone" "postgres" {
   resource_group_name = azurerm_resource_group.airflow.name
 }
 
+# =========================
 # PostgreSQL Flexible Server (private)
+# =========================
 resource "azurerm_postgresql_flexible_server" "airflow_db" {
   name                = "airflow-metadb-postgresql"
   resource_group_name = azurerm_resource_group.airflow.name
@@ -43,8 +47,8 @@ resource "azurerm_postgresql_flexible_server" "airflow_db" {
   sku_name   = "GP_Standard_D2ds_v5"
   storage_mb = 32768
 
-  delegated_subnet_id = azurerm_subnet.db.id
-  private_dns_zone_id = azurerm_private_dns_zone.postgres.id
+  delegated_subnet_id          = azurerm_subnet.db.id
+  private_dns_zone_id          = azurerm_private_dns_zone.postgres.id
   public_network_access_enabled = false
 
   authentication {
@@ -61,7 +65,9 @@ resource "azurerm_postgresql_flexible_server_database" "airflow_db_database" {
   collation = "en_US.utf8"
 }
 
+# =========================
 # AKS cluster
+# =========================
 resource "azurerm_kubernetes_cluster" "aks" {
   name                = "aks-airflow-prod"
   location            = azurerm_resource_group.airflow.location
@@ -69,10 +75,10 @@ resource "azurerm_kubernetes_cluster" "aks" {
   dns_prefix          = "airflow"
 
   default_node_pool {
-    name                = "systempool"
-    node_count          = 1
-    vm_size             = "Standard_B2s"
-    vnet_subnet_id      = azurerm_subnet.aks.id
+    name           = "systempool"
+    node_count     = 1
+    vm_size        = "Standard_B2s"
+    vnet_subnet_id = azurerm_subnet.aks.id
   }
 
   identity {
@@ -91,12 +97,14 @@ resource "azurerm_kubernetes_cluster_node_pool" "workerpool" {
   min_count             = 0
   max_count             = 5
   mode                  = "User"
-  vnet_subnet_id        = azurerm_subnet.subnet_aks.id
+  vnet_subnet_id        = azurerm_subnet.aks.id
 
   node_taints = ["workload=worker:NoSchedule"]
 }
 
+# =========================
 # Public IP (in AKS node resource group)
+# =========================
 resource "azurerm_public_ip" "airflow_web" {
   name                = "pip-airflow-web"
   location            = azurerm_resource_group.airflow.location
@@ -105,7 +113,9 @@ resource "azurerm_public_ip" "airflow_web" {
   sku                 = "Standard"
 }
 
-# Kubernetes namespace and secrets (using kubernetes provider configured from AKS kubeconfig)
+# =========================
+# Kubernetes namespace and secrets
+# =========================
 resource "kubernetes_namespace" "airflow_ns" {
   metadata {
     name = "airflow"
@@ -115,8 +125,6 @@ resource "kubernetes_namespace" "airflow_ns" {
 }
 
 resource "kubernetes_secret" "airflow_db_secret" {
-  provider = kubernetes.aks
-
   metadata {
     name      = "airflow-db-secret"
     namespace = kubernetes_namespace.airflow_ns.metadata[0].name
@@ -130,8 +138,6 @@ resource "kubernetes_secret" "airflow_db_secret" {
 }
 
 resource "kubernetes_secret" "airflow_ssh_secret" {
-  provider = kubernetes.aks
-
   metadata {
     name      = "airflow-ssh-secret"
     namespace = kubernetes_namespace.airflow_ns.metadata[0].name
@@ -145,8 +151,6 @@ resource "kubernetes_secret" "airflow_ssh_secret" {
 }
 
 resource "kubernetes_secret" "airflow_ssh_knownhosts" {
-  provider = kubernetes.aks
-
   metadata {
     name      = "airflow-ssh-knownhosts"
     namespace = kubernetes_namespace.airflow_ns.metadata[0].name
@@ -159,10 +163,10 @@ resource "kubernetes_secret" "airflow_ssh_knownhosts" {
   depends_on = [kubernetes_namespace.airflow_ns]
 }
 
+# =========================
 # Helm Airflow
+# =========================
 resource "helm_release" "airflow" {
-  provider = helm.aks
-
   name       = "airflow"
   repository = "https://airflow.apache.org"
   chart      = "airflow"
@@ -170,76 +174,75 @@ resource "helm_release" "airflow" {
   version    = "1.16.0"
 
   set = [
-  {
-    name  = "executor"
-    value = "KubernetesExecutor"
-  },
-  {
-    name  = "postgresql.enabled"
-    value = "false"
-  },
-  {
-    name  = "redis.enabled"
-    value = "false"
-  },
-  {
-    name  = "data.metadataSecretName"
-    value = kubernetes_secret.airflow_db_secret.metadata[0].name
-  },
-  {
-    name  = "airflow.persistence.enabled"
-    value = "true"
-  },
-  {
-    name  = "airflow.persistence.size"
-    value = "20Gi"
-  },
-  {
-    name  = "images.airflow.repository"
-    value = "apache/airflow"
-  },
-  {
-    name  = "images.airflow.tag"
-    value = var.airflow_image_tag
-  },
-  {
-    name  = "airflow.airflowVersion"
-    value = var.airflow_image_tag
-  },
-  {
-    name  = "webserver.service.type"
-    value = "LoadBalancer"
-  },
-  {
-    name  = "webserver.service.loadBalancerIP"
-    value = azurerm_public_ip.airflow_web.ip_address
-  },
-  {
-    name  = "dags.gitSync.enabled"
-    value = "true"
-  },
-  {
-    name  = "dags.gitSync.repo"
-    value = var.dags_git_repo
-  },
-  {
-    name  = "dags.gitSync.branch"
-    value = var.dags_git_branch
-  },
-  {
-    name  = "dags.gitSync.subPath"
-    value = "dags"
-  },
-  {
-    name  = "dags.gitSync.sshKeySecret"
-    value = kubernetes_secret.airflow_ssh_secret.metadata[0].name
-  },
-  # node selector and tolerations should match the workerpool
-  {
-    name  = "executorConfig.nodeSelector.agentpool"
-    value = "workerpool"
-  }
-]
+    {
+      name  = "executor"
+      value = "KubernetesExecutor"
+    },
+    {
+      name  = "postgresql.enabled"
+      value = "false"
+    },
+    {
+      name  = "redis.enabled"
+      value = "false"
+    },
+    {
+      name  = "data.metadataSecretName"
+      value = kubernetes_secret.airflow_db_secret.metadata[0].name
+    },
+    {
+      name  = "airflow.persistence.enabled"
+      value = "true"
+    },
+    {
+      name  = "airflow.persistence.size"
+      value = "20Gi"
+    },
+    {
+      name  = "images.airflow.repository"
+      value = "apache/airflow"
+    },
+    {
+      name  = "images.airflow.tag"
+      value = var.airflow_image_tag
+    },
+    {
+      name  = "airflow.airflowVersion"
+      value = var.airflow_image_tag
+    },
+    {
+      name  = "webserver.service.type"
+      value = "LoadBalancer"
+    },
+    {
+      name  = "webserver.service.loadBalancerIP"
+      value = azurerm_public_ip.airflow_web.ip_address
+    },
+    {
+      name  = "dags.gitSync.enabled"
+      value = "true"
+    },
+    {
+      name  = "dags.gitSync.repo"
+      value = var.dags_git_repo
+    },
+    {
+      name  = "dags.gitSync.branch"
+      value = var.dags_git_branch
+    },
+    {
+      name  = "dags.gitSync.subPath"
+      value = "dags"
+    },
+    {
+      name  = "dags.gitSync.sshKeySecret"
+      value = kubernetes_secret.airflow_ssh_secret.metadata[0].name
+    },
+    {
+      name  = "executorConfig.nodeSelector.agentpool"
+      value = "workerpool"
+    }
+  ]
 
   lifecycle {
     ignore_changes = [
