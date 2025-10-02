@@ -30,18 +30,17 @@ resource "azurerm_private_dns_zone" "postgres" {
 }
 
 resource "azurerm_postgresql_flexible_server" "airflow_db" {
-  name                = "airflow-metadb-postgresql"
-  resource_group_name = azurerm_resource_group.airflow.name
-  location            = azurerm_resource_group.airflow.location
-  administrator_login    = var.db_admin_user
-  administrator_password = var.db_admin_password
-  version                = "16"
-  sku_name               = "GP_Standard_D2ds_v5"
-  storage_mb             = 32768
-  delegated_subnet_id    = azurerm_subnet.db.id
-  private_dns_zone_id    = azurerm_private_dns_zone.postgres.id
+  name                       = "airflow-metadb-postgresql"
+  resource_group_name        = azurerm_resource_group.airflow.name
+  location                   = azurerm_resource_group.airflow.location
+  administrator_login        = var.db_admin_user
+  administrator_password     = var.db_admin_password
+  version                    = "16"
+  sku_name                   = "GP_Standard_D2ds_v5"
+  storage_mb                 = 32768
+  delegated_subnet_id        = azurerm_subnet.db.id
+  private_dns_zone_id        = azurerm_private_dns_zone.postgres.id
   public_network_access_enabled = false
-
   authentication { password_auth_enabled = true }
   depends_on = [azurerm_subnet.db]
 }
