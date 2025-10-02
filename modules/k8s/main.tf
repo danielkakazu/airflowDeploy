@@ -1,21 +1,24 @@
+# Kubernetes provider
 provider "kubernetes" {
-  alias                   = "aks"
-  host                    = var.kube_host
-  client_certificate      = base64decode(var.kube_client_certificate)
-  client_key              = base64decode(var.kube_client_key)
-  cluster_ca_certificate  = base64decode(var.kube_cluster_ca_certificate)
+  alias                  = "aks"
+  host                   = var.kube_host
+  client_certificate     = base64decode(var.kube_client_certificate)
+  client_key             = base64decode(var.kube_client_key)
+  cluster_ca_certificate = base64decode(var.kube_cluster_ca_certificate)
 }
 
+# Helm provider
 provider "helm" {
-  alias      = "aks"
-  kubernetes = kubernetes.aks
+  alias = "aks"
 }
 
+# Namespace
 resource "kubernetes_namespace" "airflow_ns" {
   provider = kubernetes.aks
   metadata { name = "airflow" }
 }
 
+# Secrets
 resource "kubernetes_secret" "airflow_db_secret" {
   provider = kubernetes.aks
   metadata {
@@ -43,6 +46,7 @@ resource "kubernetes_secret" "airflow_ssh_knownhosts" {
   data = { knownHosts = base64encode(var.ssh_known_hosts) }
 }
 
+# Helm release Airflow
 resource "helm_release" "airflow" {
   provider  = helm.aks
   name       = "airflow"
