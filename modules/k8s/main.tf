@@ -7,13 +7,8 @@ provider "kubernetes" {
 }
 
 provider "helm" {
-  alias = "aks"
-  kubernetes = {
-    host                   = var.kube_host
-    client_certificate     = base64decode(var.kube_client_certificate)
-    client_key             = base64decode(var.kube_client_key)
-    cluster_ca_certificate = base64decode(var.kube_cluster_ca_certificate)
-  }
+  alias      = "aks"
+  kubernetes = kubernetes.aks
 }
 
 resource "kubernetes_namespace" "airflow_ns" {
@@ -28,7 +23,6 @@ resource "kubernetes_secret" "airflow_db_secret" {
     namespace = kubernetes_namespace.airflow_ns.metadata[0].name
   }
   data = { connection = base64encode(var.db_connection_string) }
-  depends_on = [kubernetes_namespace.airflow_ns]
 }
 
 resource "kubernetes_secret" "airflow_ssh_secret" {
@@ -38,7 +32,6 @@ resource "kubernetes_secret" "airflow_ssh_secret" {
     namespace = kubernetes_namespace.airflow_ns.metadata[0].name
   }
   data = { gitSshKey = base64encode(var.ssh_private_key) }
-  depends_on = [kubernetes_namespace.airflow_ns]
 }
 
 resource "kubernetes_secret" "airflow_ssh_knownhosts" {
@@ -48,7 +41,6 @@ resource "kubernetes_secret" "airflow_ssh_knownhosts" {
     namespace = kubernetes_namespace.airflow_ns.metadata[0].name
   }
   data = { knownHosts = base64encode(var.ssh_known_hosts) }
-  depends_on = [kubernetes_namespace.airflow_ns]
 }
 
 resource "helm_release" "airflow" {
@@ -80,10 +72,4 @@ resource "helm_release" "airflow" {
   ]
 
   lifecycle { ignore_changes = [set] }
-
-  depends_on = [
-    kubernetes_namespace.airflow_ns,
-    kubernetes_secret.airflow_db_secret,
-    kubernetes_secret.airflow_ssh_secret
-  ]
 }

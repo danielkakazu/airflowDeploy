@@ -1,5 +1,6 @@
 output "aks_cluster_name" {
-  value = module.infra.kube_host
+  value     = module.infra.aks_name
+  sensitive = true
 }
 
 output "postgres_fqdn" {
