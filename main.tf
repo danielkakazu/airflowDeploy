@@ -47,8 +47,8 @@ resource "azurerm_postgresql_flexible_server" "airflow_db" {
   sku_name   = "GP_Standard_D2ds_v5"
   storage_mb = 32768
 
-  delegated_subnet_id         = azurerm_subnet.db.id
-  private_dns_zone_id         = azurerm_private_dns_zone.postgres.id
+  delegated_subnet_id           = azurerm_subnet.db.id
+  private_dns_zone_id           = azurerm_private_dns_zone.postgres.id
   public_network_access_enabled = false
 
   authentication {
@@ -110,27 +110,6 @@ resource "azurerm_public_ip" "airflow_web" {
   resource_group_name = azurerm_kubernetes_cluster.aks.node_resource_group
   allocation_method   = "Static"
   sku                 = "Standard"
-}
-
-# =========================
-# Configure Kubernetes provider dynamically
-# =========================
-provider "kubernetes" {
-  alias = "aks"
-  host                   = azurerm_kubernetes_cluster.aks.kube_config[0].host
-  client_certificate     = base64decode(azurerm_kubernetes_cluster.aks.kube_config[0].client_certificate)
-  client_key             = base64decode(azurerm_kubernetes_cluster.aks.kube_config[0].client_key)
-  cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.aks.kube_config[0].cluster_ca_certificate)
-}
-
-provider "helm" {
-  alias      = "aks"
-  kubernetes = {
-    host                   = azurerm_kubernetes_cluster.aks.kube_config[0].host
-    client_certificate     = base64decode(azurerm_kubernetes_cluster.aks.kube_config[0].client_certificate)
-    client_key             = base64decode(azurerm_kubernetes_cluster.aks.kube_config[0].client_key)
-    cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.aks.kube_config[0].cluster_ca_certificate)
-  }
 }
 
 # =========================
