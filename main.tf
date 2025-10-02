@@ -1,21 +1,4 @@
 # =========================
-# AKS Node Pool (corrigido)
-# =========================
-resource "azurerm_kubernetes_cluster_node_pool" "workerpool" {
-  name                  = "workerpool"
-  kubernetes_cluster_id = azurerm_kubernetes_cluster.aks.id
-  vm_size               = "Standard_D4s_v3"
-  node_count            = 0
-  auto_scaling_enabled  = true
-  min_count             = 0
-  max_count             = 5
-  mode                  = "User"
-  vnet_subnet_id        = azurerm_subnet.aks.id
-
-  node_taints = ["workload=worker:NoSchedule"]
-}
-
-# =========================
 # Kubernetes namespace
 # =========================
 resource "kubernetes_namespace" "airflow_ns" {
@@ -29,7 +12,7 @@ resource "kubernetes_namespace" "airflow_ns" {
 }
 
 # =========================
-# Kubernetes Secrets
+# Kubernetes secrets
 # =========================
 resource "kubernetes_secret" "airflow_db_secret" {
   provider = kubernetes.aks
@@ -77,7 +60,7 @@ resource "kubernetes_secret" "airflow_ssh_knownhosts" {
 }
 
 # =========================
-# Helm Airflow
+# Helm Airflow release
 # =========================
 resource "helm_release" "airflow" {
   provider = helm.aks
@@ -89,23 +72,23 @@ resource "helm_release" "airflow" {
   version    = "1.16.0"
 
   set = [
-    { name = "executor"; value = "KubernetesExecutor" },
-    { name = "postgresql.enabled"; value = "false" },
-    { name = "redis.enabled"; value = "false" },
-    { name = "data.metadataSecretName"; value = kubernetes_secret.airflow_db_secret.metadata[0].name },
-    { name = "airflow.persistence.enabled"; value = "true" },
-    { name = "airflow.persistence.size"; value = "20Gi" },
-    { name = "images.airflow.repository"; value = "apache/airflow" },
-    { name = "images.airflow.tag"; value = var.airflow_image_tag },
-    { name = "airflow.airflowVersion"; value = var.airflow_image_tag },
-    { name = "webserver.service.type"; value = "LoadBalancer" },
-    { name = "webserver.service.loadBalancerIP"; value = azurerm_public_ip.airflow_web.ip_address },
-    { name = "dags.gitSync.enabled"; value = "true" },
-    { name = "dags.gitSync.repo"; value = var.dags_git_repo },
-    { name = "dags.gitSync.branch"; value = var.dags_git_branch },
-    { name = "dags.gitSync.subPath"; value = "dags" },
-    { name = "dags.gitSync.sshKeySecret"; value = kubernetes_secret.airflow_ssh_secret.metadata[0].name },
-    { name = "executorConfig.nodeSelector.agentpool"; value = "workerpool" }
+    { name = "executor", value = "KubernetesExecutor" },
+    { name = "postgresql.enabled", value = "false" },
+    { name = "redis.enabled", value = "false" },
+    { name = "data.metadataSecretName", value = kubernetes_secret.airflow_db_secret.metadata[0].name },
+    { name = "airflow.persistence.enabled", value = "true" },
+    { name = "airflow.persistence.size", value = "20Gi" },
+    { name = "images.airflow.repository", value = "apache/airflow" },
+    { name = "images.airflow.tag", value = var.airflow_image_tag },
+    { name = "airflow.airflowVersion", value = var.airflow_image_tag },
+    { name = "webserver.service.type", value = "LoadBalancer" },
+    { name = "webserver.service.loadBalancerIP", value = azurerm_public_ip.airflow_web.ip_address },
+    { name = "dags.gitSync.enabled", value = "true" },
+    { name = "dags.gitSync.repo", value = var.dags_git_repo },
+    { name = "dags.gitSync.branch", value = var.dags_git_branch },
+    { name = "dags.gitSync.subPath", value = "dags" },
+    { name = "dags.gitSync.sshKeySecret", value = kubernetes_secret.airflow_ssh_secret.metadata[0].name },
+    { name = "executorConfig.nodeSelector.agentpool", value = "workerpool" }
   ]
 
   lifecycle {
